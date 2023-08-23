@@ -1,0 +1,100 @@
+---
+title: "eds221-day8-task"
+format: html
+editor: visual
+---
+
+```{r}
+# General use packages:
+library(tidyverse)
+library(here)
+library(janitor)
+
+# Specifically for plots:
+library(patchwork)
+library(ggrepel)
+library(gghighlight)
+library(paletteer)
+#library(ggExtra)
+#library(ggbeeswarm)
+
+# And for another dataset we'll explore:
+library(gapminder)
+
+# Spatial
+library(sf)
+```
+
+
+```{r}
+space_launch <- read_csv(here::here("data", "space_launches.csv"))
+```
+
+
+```{r}
+space_new <- space_launch %>% 
+  filter(str_detect(type, pattern = "Falcon"))
+
+
+
+ggplot(data = space_new, aes(x = launch_year, y = type, size = 5)) + 
+  geom_line() +
+  labs(x = "the time of year(in respect to year)", y = "the vessel of travel(aka what spaceship it was)", title = "scottish wannabe") +
+  theme_minimal() +
+  theme(panel.background = element_rect(color = "lightblue", size = 5, fill = "red"), 
+        plot.background = element_rect(fill = "lightblue"),
+        panel.grid = element_line(color = "white", size = 7), 
+        axis.text.x = element_text(color = "red"),
+        axis.text.y = element_text(color = "red"))
+
+```
+
+
+
+    Create a summary table of total annual greenhouse gas emissions (only from Emissions_mtCO2e column) by sector_general
+
+    Create a summary table of total annual greenhouse gas emissions (only from Emissions_mtCO2e column) by year and commodity type
+
+    Create a subset of the data that only contains observations from 2005 on, only for observations where Sector_Detail2 contains the pattern “PG&E”, then limit to columns Calendar_Year, Sector_Detail2 and Emissions_mtCO2e.
+
+```{r}
+sf_emission <- read_csv(here::here("data", "San_Francisco_Communitywide_Greenhouse_Gas_Inventory.csv")) %>% clean_names()
+
+sf_emission_sector_general <- sf_emission %>% 
+  group_by(sector_general) %>% 
+  reframe(emissions_mt_co2e)
+
+sf_emission_year_commodity <- sf_emission %>% 
+  group_by(calendar_year, commodity_type) %>% 
+  reframe(emissions_mt_co2e)
+
+sf_emission_subset <- sf_emission %>% 
+  filter(calendar_year >= 2005, str_detect(sector_detail2, pattern = "PG&E")) %>% 
+  reframe(calendar_year, sector_detail2, emissions_mt_co2e)
+```
+
+
+Create a finalized graph (as perfect as you can make it) using the San Francisco GHG emissions dataset. You get to choose what you want to visualize. You can pick which variables & observations you’re interested in. You may want to do some wrangling / summarizing first.
+
+Once you’ve decided on what to plot, create the best graph that you can to communicate what’s going on with the data.
+
+Once you’re done, drop your best graph (as a .png or .jpg) into the course Slack channel.
+
+```{r}
+# sf_count <- 
+#   sf_emission %>% 
+#   group_by(sector_general) %>% 
+#   mutate(count_sector_general = n())
+ggplot(data = sf_emission, aes(x = sector_general, y = emissions_mt_co2e)) + 
+  geom_col(fill = "pink", color = "black") + 
+  labs(x = "Sectors", y = "Emissions (mt)", title = "Amount of Emissions emitted by Sector") +
+  theme_minimal() + 
+  theme(panel.background = element_rect(fill = "lightgray"),
+        plot.background = element_rect(fill = "lightgray"))
+#look at facet to do border
+ggsave
+```
+
+
+
+
